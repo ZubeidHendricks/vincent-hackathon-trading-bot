@@ -16,6 +16,13 @@
     "start": "node ./dist/bin/serverWorker.mjs",
     "startWorker": "node ./dist/bin/jobWorker.mjs",
     "startApiServer": "node ./dist/bin/apiServer.mjs",
+    "competition": "node ./dist/bin/competitionRunner.mjs",
+    "competition:demo": "node ./dist/bin/competitionRunner.mjs --demo --duration 0.1",
+    "multi-agent": "pnpm build && node ./dist/multi-agent-production.mjs",
+    "multi-agent:dev": "pnpm dotenvx run -- pnpm bun --watch src/multi-agent-production.ts",
+    "vincent-hackathon": "pnpm build && node ./dist/vincent-hackathon-production.mjs",
+    "vincent-hackathon:dev": "pnpm dotenvx run -- npx tsx src/vincent-hackathon-production.ts",
+    "vincent-hackathon:test": "AUTO_STOP_MINUTES=1 pnpm dotenvx run -- npx tsx src/vincent-hackathon-production.ts --balance 1000 --daily-limit 100",
     "clean": "pnpm exec rm -Rf node_modules dist",
     "mintRli": "pnpm dotenvx run -- pnpm bun ./src/bin/mintRLINft.ts"
   },
@@ -30,7 +37,10 @@
   "bin": {
     "serverWorker": "./dist/bin/serverWorker.mjs",
     "jobWorker": "./dist/bin/jobWorker.mjs",
-    "apiServer": "./dist/bin/apiServer.mjs"
+    "apiServer": "./dist/bin/apiServer.mjs",
+    "competitionRunner": "./dist/bin/competitionRunner.mjs",
+    "multiAgentTrader": "./dist/multi-agent-production.mjs",
+    "vincentHackathon": "./dist/vincent-hackathon-production.mjs"
   },
   "private": true,
   "dependencies": {
@@ -40,7 +50,8 @@
     "@lit-protocol/contracts-sdk": "^7.0.9",
     "@lit-protocol/lit-node-client": "^7.0.9",
     "@lit-protocol/types": "^7.0.9",
-    "@lit-protocol/vincent-sdk": "0.0.6",
+    "@lit-protocol/vincent-app-sdk": "^1.0.2",
+    "@lit-protocol/vincent-mcp-sdk": "0.0.2-0",
     "@noble/secp256k1": "^2.2.3",
     "@t3-oss/env-core": "^0.12.0",
     "@whisthub/agenda": "^7.0.2",

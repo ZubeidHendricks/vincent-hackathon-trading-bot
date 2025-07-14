@@ -1,9 +1,9 @@
 {
-  "name": "vincent-dca",
-  "private": true,
+  "name": "vincent-hackathon-trading-bot",
+  "private": false,
   "version": "1.0.0",
-  "description": "Monorepo for vincent DCA backend + frontend",
-  "homepage": "https://github.com/LIT-protocol/vincent-dca",
+  "description": "Vincent AI Agent Hackathon - Multi-Agent Trading System with User-Controlled Permissions",
+  "homepage": "https://github.com/ZubeidHendricks/vincent-hackathon-trading-bot",
   "engines": {
     "node": "^20.11.1",
     "pnpm": "10.7.0"
@@ -17,10 +17,34 @@
     "dev": "pnpm build && pnpm -r run dev",
     "prepare": "husky",
     "start": "pnpm -r run start",
+    "vincent-hackathon": "pnpm --filter dca-backend vincent-hackathon",
+    "vincent-hackathon:dev": "pnpm --filter dca-backend vincent-hackathon:dev",
+    "vincent-hackathon:test": "pnpm --filter dca-backend vincent-hackathon:test",
     "link-local-vincent-sdk-dev": "pnpm dotenvx run -- ./linkVincentSdkLocaldev.sh"
   },
   "packageManager": "pnpm@10.7.0",
-  "keywords": [],
+  "keywords": [
+    "vincent",
+    "ai-agent",
+    "hackathon",
+    "trading",
+    "cryptocurrency",
+    "autonomous",
+    "multi-agent",
+    "pkp",
+    "lit-protocol",
+    "user-controlled",
+    "policy-governance"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZubeidHendricks/vincent-hackathon-trading-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ZubeidHendricks/vincent-hackathon-trading-bot/issues"
+  },
+  "license": "MIT",
+  "author": "Vincent AI Agent Hackathon Team",
   "devDependencies": {
     "@dotenvx/dotenvx": "^0.26.0",
     "@tsconfig/node20": "^20.1.5",
@@ -48,6 +72,7 @@
   },
   "dependencies": {
     "@lit-protocol/vincent-sdk": "0.0.5",
+    "commander": "^14.0.0",
     "consola": "^3.2.3",
     "tslib": "^2.8.1"
   }
