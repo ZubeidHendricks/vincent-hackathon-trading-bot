@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 import { LIT_RPC } from '@lit-protocol/constants';
-import { getVincentToolClient } from '@lit-protocol/vincent-sdk';
+import { getVincentToolClient } from '@lit-protocol/vincent-app-sdk';
 
 import { env } from '../../../env';
 import { IPFS_CIDS_INDEX_BY_APP_VERSION } from '../../../ipfsCidsIndexByAppVersion';
