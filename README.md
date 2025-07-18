@@ -8,11 +8,6 @@
 
 This is a sophisticated cryptocurrency trading bot built for the **Autonomous Apes Trading Competition** (July 1-25, 2025). It combines multiple advanced trading strategies with Vincent AI's secure execution framework, targeting prizes across multiple bounty tracks.
 
-### 🏆 Competition Targets
-- **Main Track**: $5,000 prize pool
-- **WAGMI Pool**: $20,000 participant rewards  
-- **Vincent AI Bounty**: $5,000 for best agent/tool
-- **Total Potential**: $30,000+ in prizes
 
 ## ✨ Key Features
 
