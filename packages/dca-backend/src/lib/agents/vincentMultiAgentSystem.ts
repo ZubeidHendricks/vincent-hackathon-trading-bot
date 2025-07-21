@@ -11,6 +11,7 @@ import { VincentArbitrageAgent } from './vincentArbitrageAgent';
 import { VincentMeanReversionAgent } from './vincentMeanReversionAgent';
 import { MarketData, TradingSignal } from '../strategies/index';
 import { RealTimeDataFeed } from '../dataFeeds/realTimeDataFeed';
+import { recallNetworkClient, AgentRegistration } from '../recallNetwork/index';
 import consola from 'consola';
 
 interface VincentSystemConfig {
@@ -71,6 +72,11 @@ export class VincentMultiAgentSystem extends EventEmitter {
   private systemMetrics: VincentSystemMetrics;
   private tradeHistory: VincentTradeRecord[] = [];
   private policyViolations: string[] = [];
+  
+  // Recall Network Integration
+  private recallNetworkRegistration: AgentRegistration | null = null;
+  private lastPerformanceReport: number = 0;
+  private performanceReportInterval: number = 60000; // Report every minute
   
   private updateInterval: NodeJS.Timeout | null = null;
   private performanceTracker: any = {
@@ -221,6 +227,9 @@ export class VincentMultiAgentSystem extends EventEmitter {
     consola.info('🚀 Starting Vincent Multi-Agent Trading System...');
     
     try {
+      // Register with Recall Network Competition
+      await this.registerWithRecallNetwork();
+      
       // Start all Vincent agents
       for (const [agentId, agent] of this.agents) {
         await agent.start();
@@ -289,7 +298,7 @@ export class VincentMultiAgentSystem extends EventEmitter {
 
   private startMainLoop(): void {
     this.updateInterval = setInterval(async () => {
-      await this.vincentSystemUpdate();
+      await this.vincentSystemUpdateWithRecallNetwork();
     }, this.config.updateFrequency);
   }
 
@@ -543,5 +552,159 @@ export class VincentMultiAgentSystem extends EventEmitter {
     
     consola.info('🔄 Vincent global policy constraints updated across all agents');
     this.emit('vincentPolicyUpdated', { constraints: this.config.globalPolicyConstraints });
+  }
+
+  // ========== RECALL NETWORK COMPETITION INTEGRATION ==========
+
+  /**
+   * Register agent with Recall Network Competition
+   */
+  private async registerWithRecallNetwork(): Promise<void> {
+    try {
+      consola.info('🌐 Registering with Recall Network Competition...');
+      
+      const capabilities = [
+        'autonomous-trading',
+        'multi-agent-coordination', 
+        'dca-strategy',
+        'momentum-trading',
+        'arbitrage-detection',
+        'mean-reversion',
+        'risk-management',
+        'user-controlled-permissions',
+        'vincent-protocol-integration',
+        'real-time-market-analysis',
+        'policy-compliance',
+        'pkp-wallet-management'
+      ];
+
+      this.recallNetworkRegistration = await recallNetworkClient.registerAgent(capabilities);
+      
+      consola.success(`✅ Registered with Recall Network as Agent: ${this.recallNetworkRegistration.agentId}`);
+      consola.info(`🏆 Competition Environment: ${recallNetworkClient.getCurrentEnvironment()}`);
+      
+      // Update agent status to active
+      await recallNetworkClient.updateAgentStatus(
+        this.recallNetworkRegistration.agentId, 
+        'active'
+      );
+      
+    } catch (error) {
+      consola.error('❌ Failed to register with Recall Network:', error);
+      
+      if (this.config.competitionMode) {
+        consola.warn('⚠️ Competition mode enabled but registration failed - continuing anyway');
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * Report performance metrics to Recall Network
+   */
+  private async reportPerformanceToRecallNetwork(): Promise<void> {
+    if (!this.recallNetworkRegistration || !this.config.competitionMode) {
+      return;
+    }
+
+    const now = Date.now();
+    if (now - this.lastPerformanceReport < this.performanceReportInterval) {
+      return;
+    }
+
+    try {
+      const performanceData = {
+        agentId: this.recallNetworkRegistration.agentId,
+        timestamp: now,
+        performance: {
+          totalReturn: this.systemMetrics.totalReturn,
+          sharpeRatio: this.systemMetrics.sharpeRatio,
+          drawdown: -Math.abs(this.systemMetrics.maxDrawdown), // Ensure negative
+          trades: this.systemMetrics.totalTrades
+        },
+        metadata: {
+          activeAgents: this.systemMetrics.activeAgents,
+          systemUptime: (now - this.startTime) / 1000 / 3600, // hours
+          totalValue: this.systemMetrics.totalValue,
+          winRate: this.systemMetrics.winRate,
+          policyViolations: this.systemMetrics.vincentMetrics.policyViolations,
+          environment: recallNetworkClient.getCurrentEnvironment(),
+          vincentMetrics: {
+            dailySpending: this.systemMetrics.vincentMetrics.totalSpending.daily,
+            monthlySpending: this.systemMetrics.vincentMetrics.totalSpending.monthly,
+            walletCount: this.systemMetrics.vincentMetrics.walletAddresses.length,
+            toolsUsed: Object.fromEntries(this.systemMetrics.vincentMetrics.toolsUsed)
+          }
+        }
+      };
+
+      await recallNetworkClient.submitPerformanceData(performanceData);
+      this.lastPerformanceReport = now;
+      
+      // consola.info('📊 Performance metrics reported to Recall Network');
+      
+    } catch (error) {
+      consola.error('❌ Failed to report performance to Recall Network:', error);
+    }
+  }
+
+  /**
+   * Get current competition leaderboard position
+   */
+  async getCompetitionStatus(): Promise<any> {
+    if (!this.recallNetworkRegistration) {
+      return { error: 'Not registered with Recall Network' };
+    }
+
+    try {
+      const [competitionData, leaderboard] = await Promise.all([
+        recallNetworkClient.getCompetitionData(),
+        recallNetworkClient.getLeaderboard()
+      ]);
+
+      const ourPosition = leaderboard.find(
+        entry => entry.agentId === this.recallNetworkRegistration?.agentId
+      );
+
+      return {
+        competition: competitionData,
+        ourRank: ourPosition?.rank || 'Unranked',
+        ourScore: ourPosition?.score || 0,
+        totalParticipants: leaderboard.length,
+        environment: recallNetworkClient.getCurrentEnvironment(),
+        agentId: this.recallNetworkRegistration.agentId
+      };
+
+    } catch (error) {
+      consola.error('❌ Failed to get competition status:', error);
+      return { error: error.message };
+    }
+  }
+
+  /**
+   * Switch between sandbox and production environments
+   */
+  switchRecallNetworkEnvironment(environment: 'sandbox' | 'production'): void {
+    if (environment === 'production') {
+      recallNetworkClient.switchToProduction();
+      consola.info('🏭 Switched to Recall Network PRODUCTION environment');
+    } else {
+      recallNetworkClient.switchToSandbox();
+      consola.info('🏖️ Switched to Recall Network SANDBOX environment');
+    }
+  }
+
+  /**
+   * Enhanced system update with Recall Network reporting
+   */
+  private async vincentSystemUpdateWithRecallNetwork(): Promise<void> {
+    // Run original system update
+    await this.vincentSystemUpdate();
+    
+    // Report to Recall Network if in competition mode
+    if (this.config.competitionMode) {
+      await this.reportPerformanceToRecallNetwork();
+    }
   }
 }

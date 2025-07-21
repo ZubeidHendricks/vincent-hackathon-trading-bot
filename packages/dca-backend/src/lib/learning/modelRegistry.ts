@@ -109,7 +109,7 @@ export class ModelRegistry extends EventEmitter {
 
     try {
       // Check if deployment is safe
-      const safeTodeploy = await this.validateDeployment(model, agentId);
+      const safeToDeploy = await this.validateDeployment(model, agentId);
       if (!safeToDeploy) {
         consola.warn(`Deployment validation failed for ${modelKey} -> ${agentId}`);
         return false;

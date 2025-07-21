@@ -775,8 +775,8 @@ export class VincentRiskManagementAgent extends VincentSelfImprovingAgent {
   }
 
   private async calculateExpectedShortfall(positions: PortfolioPosition[], confidence: number): Promise<number> {
-    const var = await this.calculateVaR(positions, confidence);
-    return var * 1.2; // ES typically 20% higher than VaR
+    const valueAtRisk = await this.calculateVaR(positions, confidence);
+    return valueAtRisk * 1.2; // ES typically 20% higher than VaR
   }
 
   private calculateSharpeRatio(): number {

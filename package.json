@@ -6,7 +6,7 @@
   "homepage": "https://github.com/ZubeidHendricks/vincent-hackathon-trading-bot",
   "engines": {
     "node": "^20.11.1",
-    "pnpm": "10.7.0"
+    "pnpm": ">=10.7.0"
   },
   "type": "module",
   "scripts": {
@@ -22,7 +22,7 @@
     "vincent-hackathon:test": "pnpm --filter dca-backend vincent-hackathon:test",
     "link-local-vincent-sdk-dev": "pnpm dotenvx run -- ./linkVincentSdkLocaldev.sh"
   },
-  "packageManager": "pnpm@10.7.0",
+  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
   "keywords": [
     "vincent",
     "ai-agent",
