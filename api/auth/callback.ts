@@ -1,6 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Vercel serverless function handler - Default API endpoint
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -13,17 +12,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // Default API response
   return res.status(200).json({ 
-    message: 'Vincent Hackathon Trading Bot API',
+    message: 'Vincent Authentication Callback Endpoint', 
+    query: req.query,
     timestamp: new Date().toISOString(),
     method: req.method,
     url: req.url,
-    availableEndpoints: [
-      '/api/health - Health check endpoint',
-      '/api/auth/callback - Vincent authentication callback'
-    ],
-    deploymentId: process.env.VERCEL_DEPLOYMENT_ID || 'local',
-    region: process.env.VERCEL_REGION || 'unknown'
+    success: true
   });
 }
