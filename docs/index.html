@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vincent Hackathon Trading Bot API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 800px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .endpoint { background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 5px; border-left: 4px solid #007bff; }
+        .endpoint a { text-decoration: none; color: #007bff; font-weight: bold; }
+        .endpoint a:hover { text-decoration: underline; }
+        code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; }
+        .status { color: #28a745; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Vincent Hackathon Trading Bot API</h1>
+        <p class="status">✅ Status: Online</p>
+        <p>Deployed on: <span id="timestamp"></span></p>
+        
+        <h2>Available Endpoints:</h2>
+        
+        <div class="endpoint">
+            <h3><a href="./health.html">/health</a></h3>
+            <p>Health check endpoint for monitoring system status</p>
+            <code>GET https://zubeidhendricks.github.io/vincent-hackathon-trading-bot/health.html</code>
+        </div>
+        
+        <div class="endpoint">
+            <h3><a href="./auth/callback.html">/auth/callback</a></h3>
+            <p>🎯 <strong>Vincent Authentication Callback Endpoint</strong></p>
+            <code>GET https://zubeidhendricks.github.io/vincent-hackathon-trading-bot/auth/callback.html</code>
+        </div>
+        
+        <div class="endpoint">
+            <h3><a href="./test.html">/test</a></h3>
+            <p>Simple test endpoint for verification</p>
+            <code>GET https://zubeidhendricks.github.io/vincent-hackathon-trading-bot/test.html</code>
+        </div>
+
+        <h2>Vincent App Registration:</h2>
+        <p>Use this URL in your Vincent app registration form:</p>
+        <div style="background: #d4edda; padding: 15px; border-radius: 5px; border: 1px solid #c3e6cb;">
+            <strong>Redirect URI:</strong><br>
+            <code style="font-size: 16px; background: white; padding: 8px;">https://zubeidhendricks.github.io/vincent-hackathon-trading-bot/auth/callback.html</code>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('timestamp').textContent = new Date().toISOString();
+    </script>
+</body>
+</html>

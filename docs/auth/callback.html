@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vincent Auth Callback - Trading Bot</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 700px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .success { color: #28a745; font-size: 24px; font-weight: bold; }
+        .json { background: #f8f9fa; padding: 20px; border-radius: 5px; font-family: monospace; font-size: 14px; border: 1px solid #dee2e6; }
+        .highlight { background: #fff3cd; padding: 10px; border-radius: 5px; border-left: 4px solid #ffc107; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Vincent Authentication Callback</h1>
+        <p class="success">✅ Callback Endpoint Active</p>
+        
+        <div class="highlight">
+            <strong>Vincent Integration:</strong> This endpoint is ready to receive authentication callbacks from the Vincent platform.
+        </div>
+        
+        <h3>Query Parameters:</h3>
+        <div class="json" id="query-params"></div>
+        
+        <h3>Response Data:</h3>
+        <div class="json" id="response"></div>
+        
+        <p><a href="../index.html">← Back to API Index</a></p>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryObject = {};
+        for (const [key, value] of urlParams.entries()) {
+            queryObject[key] = value;
+        }
+        
+        // Create response
+        const response = {
+            message: 'Vincent Authentication Callback Endpoint',
+            success: true,
+            timestamp: new Date().toISOString(),
+            method: 'GET',
+            url: window.location.href,
+            query: queryObject,
+            deployment: 'GitHub Pages',
+            status: 'ready'
+        };
+        
+        // Display data
+        document.getElementById('query-params').textContent = JSON.stringify(queryObject, null, 2);
+        document.getElementById('response').textContent = JSON.stringify(response, null, 2);
+        
+        // For programmatic access
+        window.callbackData = response;
+        
+        // Log for debugging
+        console.log('Vincent Callback Data:', response);
+    </script>
+</body>
+</html>
