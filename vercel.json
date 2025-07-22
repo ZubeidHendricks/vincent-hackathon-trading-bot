@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "name": "vincent-hackathon-trading-bot",
+  "builds": [
+    {
+      "src": "packages/dca-backend/src/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["packages/**/*"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/auth/callback",
+      "dest": "/packages/dca-backend/src/routes/auth.ts"
+    },
+    {
+      "src": "/health",
+      "dest": "/packages/dca-backend/src/routes/health.ts"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/packages/dca-backend/src/index.ts"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/packages/dca-backend/src/index.ts"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "RECALL_NETWORK_ENVIRONMENT": "production"
+  },
+  "functions": {
+    "packages/dca-backend/src/index.ts": {
+      "maxDuration": 30
+    }
+  }
+}

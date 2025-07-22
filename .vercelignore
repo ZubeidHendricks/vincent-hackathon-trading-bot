@@ -1,0 +1,17 @@
+node_modules
+.next
+dist
+build
+.env*
+!.env.example
+.DS_Store
+*.log
+.git
+.nyc_output
+coverage
+.cache
+.parcel-cache
+.vscode
+.idea
+*.tgz
+*.tar.gz

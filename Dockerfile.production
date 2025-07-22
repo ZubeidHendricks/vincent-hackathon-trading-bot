@@ -1,0 +1,73 @@
+# Production Dockerfile for Hackathon Trading Bot
+FROM node:20-alpine AS base
+
+# Install system dependencies
+RUN apk add --no-cache \
+    curl \
+    ca-certificates \
+    tzdata \
+    && rm -rf /var/cache/apk/*
+
+# Set timezone
+ENV TZ=UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Enable pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+# Create app user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S hackathon -u 1001
+
+# Set working directory
+WORKDIR /app
+RUN chown hackathon:nodejs /app
+
+# Copy package files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.base.json ./
+COPY packages/dca-backend/package.json ./packages/dca-backend/
+COPY packages/dca-frontend/package.json ./packages/dca-frontend/
+
+# Install dependencies
+FROM base AS deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+
+# Build stage
+FROM base AS builder
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build the project
+RUN pnpm build
+
+# Production stage
+FROM base AS runner
+USER hackathon
+
+# Copy built application and dependencies
+COPY --from=deps --chown=hackathon:nodejs /app/node_modules ./node_modules
+COPY --from=deps --chown=hackathon:nodejs /app/packages/dca-backend/node_modules ./packages/dca-backend/node_modules
+COPY --from=builder --chown=hackathon:nodejs /app/packages/dca-backend/dist ./packages/dca-backend/dist
+COPY --from=builder --chown=hackathon:nodejs /app/packages/dca-backend/package.json ./packages/dca-backend/
+COPY --from=builder --chown=hackathon:nodejs /app/package.json ./
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Expose port
+EXPOSE 3000
+
+# Set production environment
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Start the application
+CMD ["node", "packages/dca-backend/dist/bin/competitionRunner.js"]

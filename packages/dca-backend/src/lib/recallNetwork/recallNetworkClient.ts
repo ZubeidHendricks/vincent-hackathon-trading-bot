@@ -41,8 +41,8 @@ export class RecallNetworkClient {
       : env.RECALL_NETWORK_SANDBOX_API_KEY;
 
     const baseUrl = environment === 'production'
-      ? 'https://api.recall.network/v1'
-      : 'https://sandbox-api.recall.network/v1';
+      ? 'https://api.competitions.recall.network'
+      : 'https://api.sandbox.competitions.recall.network';
 
     return {
       environment,
@@ -72,7 +72,7 @@ export class RecallNetworkClient {
     this.config = {
       environment: 'production',
       apiKey: env.RECALL_NETWORK_PRODUCTION_API_KEY,
-      baseUrl: 'https://api.recall.network/v1',
+      baseUrl: 'https://api.competitions.recall.network',
     };
   }
 
@@ -83,7 +83,7 @@ export class RecallNetworkClient {
     this.config = {
       environment: 'sandbox',
       apiKey: env.RECALL_NETWORK_SANDBOX_API_KEY,
-      baseUrl: 'https://sandbox-api.recall.network/v1',
+      baseUrl: 'https://api.sandbox.competitions.recall.network',
     };
   }
 

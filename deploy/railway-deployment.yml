@@ -1,0 +1,31 @@
+# Railway Deployment Configuration
+# Simple, affordable cloud deployment option
+
+version: '3'
+
+services:
+  hackathon-trading-bot:
+    build:
+      context: ../
+      dockerfile: Dockerfile.production
+    environment:
+      - NODE_ENV=production
+      - RECALL_NETWORK_ENVIRONMENT=production
+      - RECALL_NETWORK_PRODUCTION_API_KEY=${RECALL_NETWORK_PRODUCTION_API_KEY}
+      - RECALL_NETWORK_SANDBOX_API_KEY=${RECALL_NETWORK_SANDBOX_API_KEY}
+      - VINCENT_DELEGATEE_PRIVATE_KEY=${VINCENT_DELEGATEE_PRIVATE_KEY}
+      - VINCENT_DELEGATEE_ADDRESS=${VINCENT_DELEGATEE_ADDRESS}
+      - BASE_RPC_URL=https://mainnet.base.org/
+      - COINRANKING_API_KEY=${COINRANKING_API_KEY}
+      - MONGODB_URI=${MONGODB_URI}
+      - PORT=3000
+      - VINCENT_APP_VERSION=1
+      - IS_DEVELOPMENT=false
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

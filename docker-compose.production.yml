@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  hackathon-trading-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: hackathon-trading-bot-prod
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - RECALL_NETWORK_ENVIRONMENT=production
+      - RECALL_NETWORK_PRODUCTION_API_KEY=${RECALL_NETWORK_PRODUCTION_API_KEY}
+      - RECALL_NETWORK_SANDBOX_API_KEY=${RECALL_NETWORK_SANDBOX_API_KEY}
+      - VINCENT_DELEGATEE_PRIVATE_KEY=${VINCENT_DELEGATEE_PRIVATE_KEY}
+      - VINCENT_DELEGATEE_ADDRESS=${VINCENT_DELEGATEE_ADDRESS}
+      - BASE_RPC_URL=https://mainnet.base.org/
+      - COINRANKING_API_KEY=${COINRANKING_API_KEY}
+      - MONGODB_URI=${MONGODB_URI}
+      - PORT=3000
+      - VINCENT_APP_VERSION=1
+      - IS_DEVELOPMENT=false
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # MongoDB for production (if not using external service)
+  mongodb:
+    image: mongo:7
+    container_name: hackathon-mongodb-prod
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+volumes:
+  mongodb_data:
+    driver: local
