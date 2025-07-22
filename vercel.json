@@ -6,18 +6,19 @@
       "src": "packages/dca-backend/src/index.ts",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["packages/**/*"]
+        "includeFiles": ["packages/**/*"],
+        "maxLambdaSize": "50mb"
       }
     }
   ],
   "routes": [
     {
       "src": "/auth/callback",
-      "dest": "/packages/dca-backend/src/routes/auth.ts"
+      "dest": "/packages/dca-backend/src/index.ts"
     },
     {
       "src": "/health",
-      "dest": "/packages/dca-backend/src/routes/health.ts"
+      "dest": "/packages/dca-backend/src/index.ts"
     },
     {
       "src": "/api/(.*)",
@@ -31,10 +32,5 @@
   "env": {
     "NODE_ENV": "production",
     "RECALL_NETWORK_ENVIRONMENT": "production"
-  },
-  "functions": {
-    "packages/dca-backend/src/index.ts": {
-      "maxDuration": 30
-    }
   }
 }
