@@ -1,36 +1,6 @@
 {
-  "version": 2,
-  "name": "vincent-hackathon-trading-bot",
-  "builds": [
-    {
-      "src": "packages/dca-backend/src/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["packages/**/*"],
-        "maxLambdaSize": "50mb"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/auth/callback",
-      "dest": "/packages/dca-backend/src/index.ts"
-    },
-    {
-      "src": "/health",
-      "dest": "/packages/dca-backend/src/index.ts"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/packages/dca-backend/src/index.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/packages/dca-backend/src/index.ts"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "RECALL_NETWORK_ENVIRONMENT": "production"
-  }
+  "buildCommand": "pnpm build",
+  "installCommand": "npm install -g pnpm && pnpm install",
+  "devCommand": "pnpm dev",
+  "outputDirectory": "packages/dca-backend/dist"
 }
