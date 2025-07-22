@@ -1,5 +1,5 @@
 {
-  "installCommand": "npm install -g pnpm@10.13.1 && pnpm install",
+  "installCommand": "npm install -g pnpm@10.13.1 && pnpm install --no-frozen-lockfile",
   "buildCommand": "mkdir -p dist && echo 'Serverless functions ready' > dist/README.txt",
   "outputDirectory": "dist"
 }
