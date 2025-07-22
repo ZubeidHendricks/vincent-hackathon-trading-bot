@@ -1,27 +1,3 @@
 {
-  "version": 2,
-  "installCommand": "npm install -g pnpm@10.13.1 && pnpm install --no-frozen-lockfile",
-  "builds": [
-    {
-      "src": "packages/dca-frontend/**",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    },
-    {
-      "src": "api/**/*.{js,ts}",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/packages/dca-frontend/dist/$1"
-    }
-  ]
+  "installCommand": "npm install -g pnpm@10.13.1 && pnpm install --no-frozen-lockfile"
 }
