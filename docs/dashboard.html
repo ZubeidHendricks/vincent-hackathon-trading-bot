@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vincent AI Trading Dashboard - Live Production</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .status-badge { 
+            display: inline-block; 
+            padding: 5px 15px; 
+            border-radius: 20px; 
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        .status-online { background: #28a745; }
+        .status-offline { background: #dc3545; }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
+        .card { 
+            background: rgba(255,255,255,0.1); 
+            backdrop-filter: blur(10px);
+            border-radius: 15px; 
+            padding: 25px; 
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card h3 { margin-bottom: 15px; color: #fff; font-size: 1.3em; }
+        
+        .metric { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin: 10px 0; 
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+        .metric-value { 
+            font-weight: bold; 
+            font-size: 1.2em; 
+        }
+        .positive { color: #28a745; }
+        .negative { color: #dc3545; }
+        
+        .agents-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 15px; 
+        }
+        .agent-card { 
+            background: rgba(255,255,255,0.08); 
+            padding: 20px; 
+            border-radius: 12px; 
+            border-left: 4px solid #007bff;
+        }
+        .agent-active { border-left-color: #28a745; }
+        .agent-inactive { border-left-color: #6c757d; }
+        
+        .chart-container { 
+            position: relative; 
+            height: 300px; 
+            margin-top: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .policy-status { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+        }
+        .policy-item { 
+            background: rgba(255,255,255,0.05); 
+            padding: 15px; 
+            border-radius: 8px; 
+        }
+        .progress-bar { 
+            background: rgba(255,255,255,0.2); 
+            height: 8px; 
+            border-radius: 4px; 
+            overflow: hidden; 
+            margin: 8px 0; 
+        }
+        .progress-fill { 
+            height: 100%; 
+            background: linear-gradient(90deg, #28a745, #20c997); 
+            transition: width 0.3s ease; 
+        }
+        .progress-danger { background: linear-gradient(90deg, #dc3545, #c82333); }
+        
+        .trades-list { 
+            max-height: 400px; 
+            overflow-y: auto; 
+        }
+        .trade-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px; 
+            margin: 8px 0; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 8px; 
+            border-left: 3px solid #007bff;
+        }
+        .trade-buy { border-left-color: #28a745; }
+        .trade-sell { border-left-color: #dc3545; }
+        
+        .market-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 15px; 
+        }
+        .market-card { 
+            text-align: center; 
+            padding: 20px; 
+            background: rgba(255,255,255,0.08); 
+            border-radius: 10px; 
+        }
+        .market-price { 
+            font-size: 1.8em; 
+            font-weight: bold; 
+            margin: 10px 0; 
+        }
+        
+        .loading { 
+            text-align: center; 
+            padding: 40px; 
+            opacity: 0.7; 
+        }
+        .spinner { 
+            border: 4px solid rgba(255,255,255,0.3); 
+            border-top: 4px solid white; 
+            border-radius: 50%; 
+            width: 40px; 
+            height: 40px; 
+            animation: spin 1s linear infinite; 
+            margin: 0 auto 20px; 
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+
+        .last-updated {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Vincent AI Trading Dashboard</h1>
+            <div id="system-status" class="status-badge status-offline">System Offline</div>
+            <p>Live Production Multi-Agent Trading System</p>
+        </div>
+
+        <div class="grid">
+            <!-- Portfolio Performance -->
+            <div class="card">
+                <h3>📊 Portfolio Performance</h3>
+                <div id="portfolio-metrics" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading portfolio data...</p>
+                </div>
+            </div>
+
+            <!-- Agent Status -->
+            <div class="card">
+                <h3>🤖 AI Agents Status</h3>
+                <div id="agents-status" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading agent status...</p>
+                </div>
+            </div>
+
+            <!-- Vincent Policy Compliance -->
+            <div class="card">
+                <h3>🛡️ Vincent Policy Status</h3>
+                <div id="policy-status" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading policy data...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="card">
+            <h3>📈 Performance Chart</h3>
+            <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Recent Trades -->
+            <div class="card">
+                <h3>📋 Recent Trades</h3>
+                <div id="recent-trades" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading trade history...</p>
+                </div>
+            </div>
+
+            <!-- Market Data -->
+            <div class="card">
+                <h3>💹 Live Market Data</h3>
+                <div id="market-data" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading market data...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="last-updated">
+            Last Updated: <span id="last-update">Never</span>
+        </div>
+    </div>
+
+    <script>
+        class VincentDashboard {
+            constructor() {
+                // Detect environment and set appropriate API base URL
+                const isGitHubPages = window.location.hostname === 'zubeidhendricks.github.io';
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                
+                if (isLocalhost) {
+                    this.apiBase = 'http://localhost:3000';
+                } else if (isGitHubPages) {
+                    // For GitHub Pages, we'll need to use a deployed backend or show offline mode
+                    this.apiBase = 'https://your-deployed-backend.com'; // Replace with actual deployed backend
+                } else {
+                    this.apiBase = 'http://localhost:3000';
+                }
+                
+                this.performanceChart = null;
+                this.lastUpdateTime = Date.now();
+                this.init();
+            }
+
+            async init() {
+                await this.loadAllData();
+                this.setupPerformanceChart();
+                this.startAutoRefresh();
+            }
+
+            async loadAllData() {
+                try {
+                    await Promise.all([
+                        this.loadAgentStatus(),
+                        this.loadPerformanceMetrics(),
+                        this.loadVincentPolicyStatus(),
+                        this.loadRecentTrades(),
+                        this.loadMarketData()
+                    ]);
+                    this.updateSystemStatus(true);
+                } catch (error) {
+                    console.error('Failed to load dashboard data:', error);
+                    this.updateSystemStatus(false);
+                }
+                this.updateLastUpdateTime();
+            }
+
+            async loadAgentStatus() {
+                try {
+                    const response = await fetch(`${this.apiBase}/api/dashboard/agents`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'online') {
+                        this.renderAgentStatus(data);
+                    } else {
+                        this.renderOfflineAgents();
+                    }
+                } catch (error) {
+                    this.renderOfflineAgents();
+                }
+            }
+
+            renderAgentStatus(data) {
+                const container = document.getElementById('agents-status');
+                container.innerHTML = `
+                    <div class="agents-grid">
+                        <div class="agent-card ${data.agents.momentum.active ? 'agent-active' : 'agent-inactive'}">
+                            <h4>🚀 Momentum Agent</h4>
+                            <div class="metric">
+                                <span>Status:</span>
+                                <span class="${data.agents.momentum.active ? 'positive' : 'negative'}">
+                                    ${data.agents.momentum.active ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+                            <div class="metric">
+                                <span>Signal:</span>
+                                <span class="metric-value">${data.agents.momentum.currentSignal}</span>
+                            </div>
+                            <div class="metric">
+                                <span>P&L:</span>
+                                <span class="metric-value ${data.agents.momentum.pnl >= 0 ? 'positive' : 'negative'}">
+                                    $${data.agents.momentum.pnl.toFixed(2)}
+                                </span>
+                            </div>
+                            <div class="metric">
+                                <span>Trades:</span>
+                                <span class="metric-value">${data.agents.momentum.trades}</span>
+                            </div>
+                            <div class="metric">
+                                <span>Win Rate:</span>
+                                <span class="metric-value">${(data.agents.momentum.winRate * 100).toFixed(1)}%</span>
+                            </div>
+                        </div>
+
+                        <div class="agent-card ${data.agents.arbitrage.active ? 'agent-active' : 'agent-inactive'}">
+                            <h4>⚡ Arbitrage Agent</h4>
+                            <div class="metric">
+                                <span>Status:</span>
+                                <span class="${data.agents.arbitrage.active ? 'positive' : 'negative'}">
+                                    ${data.agents.arbitrage.active ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+                            <div class="metric">
+                                <span>Signal:</span>
+                                <span class="metric-value">${data.agents.arbitrage.currentSignal}</span>
+                            </div>
+                            <div class="metric">
+                                <span>P&L:</span>
+                                <span class="metric-value ${data.agents.arbitrage.pnl >= 0 ? 'positive' : 'negative'}">
+                                    $${data.agents.arbitrage.pnl.toFixed(2)}
+                                </span>
+                            </div>
+                            <div class="metric">
+                                <span>Trades:</span>
+                                <span class="metric-value">${data.agents.arbitrage.trades}</span>
+                            </div>
+                            <div class="metric">
+                                <span>Win Rate:</span>
+                                <span class="metric-value">${(data.agents.arbitrage.winRate * 100).toFixed(1)}%</span>
+                            </div>
+                        </div>
+
+                        <div class="agent-card ${data.agents.meanReversion.active ? 'agent-active' : 'agent-inactive'}">
+                            <h4>📊 Mean Reversion Agent</h4>
+                            <div class="metric">
+                                <span>Status:</span>
+                                <span class="${data.agents.meanReversion.active ? 'positive' : 'negative'}">
+                                    ${data.agents.meanReversion.active ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+                            <div class="metric">
+                                <span>Signal:</span>
+                                <span class="metric-value">${data.agents.meanReversion.currentSignal}</span>
+                            </div>
+                            <div class="metric">
+                                <span>P&L:</span>
+                                <span class="metric-value ${data.agents.meanReversion.pnl >= 0 ? 'positive' : 'negative'}">
+                                    $${data.agents.meanReversion.pnl.toFixed(2)}
+                                </span>
+                            </div>
+                            <div class="metric">
+                                <span>Trades:</span>
+                                <span class="metric-value">${data.agents.meanReversion.trades}</span>
+                            </div>
+                            <div class="metric">
+                                <span>Win Rate:</span>
+                                <span class="metric-value">${(data.agents.meanReversion.winRate * 100).toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric" style="margin-top: 20px;">
+                        <span>System Uptime:</span>
+                        <span class="metric-value">${this.formatUptime(data.systemUptime)}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Active Agents:</span>
+                        <span class="metric-value positive">${data.activeAgents}/${data.totalAgents}</span>
+                    </div>
+                `;
+            }
+
+            renderOfflineAgents() {
+                const container = document.getElementById('agents-status');
+                container.innerHTML = `
+                    <div class="metric">
+                        <span>System Status:</span>
+                        <span class="negative">Trading System Offline</span>
+                    </div>
+                    <p style="text-align: center; margin-top: 20px; opacity: 0.7;">
+                        The trading system is not currently running. Start the backend to see live agent data.
+                    </p>
+                `;
+            }
+
+            async loadPerformanceMetrics() {
+                try {
+                    const response = await fetch(`${this.apiBase}/api/dashboard/performance`);
+                    const data = await response.json();
+                    this.renderPerformanceMetrics(data);
+                } catch (error) {
+                    this.renderOfflinePerformance();
+                }
+            }
+
+            renderPerformanceMetrics(data) {
+                const container = document.getElementById('portfolio-metrics');
+                container.innerHTML = `
+                    <div class="metric">
+                        <span>Total Portfolio Value:</span>
+                        <span class="metric-value positive">$${data.portfolio.totalValue.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Total P&L:</span>
+                        <span class="metric-value ${data.portfolio.totalPnL >= 0 ? 'positive' : 'negative'}">
+                            $${data.portfolio.totalPnL.toFixed(2)}
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span>Total Return:</span>
+                        <span class="metric-value ${data.portfolio.totalReturn >= 0 ? 'positive' : 'negative'}">
+                            ${(data.portfolio.totalReturn * 100).toFixed(2)}%
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span>Sharpe Ratio:</span>
+                        <span class="metric-value">${data.portfolio.sharpeRatio.toFixed(3)}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Max Drawdown:</span>
+                        <span class="metric-value negative">${(data.portfolio.maxDrawdown * 100).toFixed(2)}%</span>
+                    </div>
+                    <div class="metric">
+                        <span>Win Rate:</span>
+                        <span class="metric-value">${(data.portfolio.winRate * 100).toFixed(1)}%</span>
+                    </div>
+                    <div class="metric">
+                        <span>Total Trades:</span>
+                        <span class="metric-value">${data.portfolio.totalTrades}</span>
+                    </div>
+                `;
+            }
+
+            renderOfflinePerformance() {
+                const container = document.getElementById('portfolio-metrics');
+                container.innerHTML = `
+                    <div class="metric">
+                        <span>Portfolio Status:</span>
+                        <span class="negative">Offline</span>
+                    </div>
+                    <p style="text-align: center; margin-top: 20px; opacity: 0.7;">
+                        Portfolio data unavailable. Start the trading system to see live metrics.
+                    </p>
+                `;
+            }
+
+            async loadVincentPolicyStatus() {
+                try {
+                    const response = await fetch(`${this.apiBase}/api/dashboard/vincent-policy`);
+                    const data = await response.json();
+                    this.renderVincentPolicyStatus(data);
+                } catch (error) {
+                    this.renderOfflinePolicy();
+                }
+            }
+
+            renderVincentPolicyStatus(data) {
+                const container = document.getElementById('policy-status');
+                const dailySpent = data.policyCompliance.spendingLimits.daily.spent;
+                const dailyLimit = data.policyCompliance.spendingLimits.daily.limit;
+                const monthlySpent = data.policyCompliance.spendingLimits.monthly.spent;
+                const monthlyLimit = data.policyCompliance.spendingLimits.monthly.limit;
+                
+                container.innerHTML = `
+                    <div class="policy-status">
+                        <div class="policy-item">
+                            <h4>Daily Spending Limit</h4>
+                            <div class="metric">
+                                <span>Spent:</span>
+                                <span class="${data.policyCompliance.spendingLimits.daily.compliant ? 'positive' : 'negative'}">
+                                    $${dailySpent.toFixed(2)} / $${dailyLimit}
+                                </span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill ${!data.policyCompliance.spendingLimits.daily.compliant ? 'progress-danger' : ''}" 
+                                     style="width: ${Math.min(100, (dailySpent / dailyLimit) * 100)}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="policy-item">
+                            <h4>Monthly Spending Limit</h4>
+                            <div class="metric">
+                                <span>Spent:</span>
+                                <span class="${data.policyCompliance.spendingLimits.monthly.compliant ? 'positive' : 'negative'}">
+                                    $${monthlySpent.toFixed(2)} / $${monthlyLimit}
+                                </span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill ${!data.policyCompliance.spendingLimits.monthly.compliant ? 'progress-danger' : ''}" 
+                                     style="width: ${Math.min(100, (monthlySpent / monthlyLimit) * 100)}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="policy-item">
+                            <h4>Risk Limits</h4>
+                            <div class="metric">
+                                <span>Max Drawdown:</span>
+                                <span class="${data.policyCompliance.riskLimits.maxDrawdown.compliant ? 'positive' : 'negative'}">
+                                    ${(data.policyCompliance.riskLimits.maxDrawdown.current * 100).toFixed(2)}% / 15%
+                                </span>
+                            </div>
+                            <div class="metric">
+                                <span>Daily Loss:</span>
+                                <span class="${data.policyCompliance.riskLimits.dailyLoss.compliant ? 'positive' : 'negative'}">
+                                    ${(data.policyCompliance.riskLimits.dailyLoss.current * 100).toFixed(2)}% / 5%
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="policy-item">
+                            <h4>Vincent Metrics</h4>
+                            <div class="metric">
+                                <span>Policy Violations:</span>
+                                <span class="${data.violations === 0 ? 'positive' : 'negative'}">${data.violations}</span>
+                            </div>
+                            <div class="metric">
+                                <span>Approval Requests:</span>
+                                <span class="metric-value">${data.approvalRequests}</span>
+                            </div>
+                            <div class="metric">
+                                <span>Wallets:</span>
+                                <span class="metric-value">${data.walletAddresses.length}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderOfflinePolicy() {
+                const container = document.getElementById('policy-status');
+                container.innerHTML = `
+                    <div class="metric">
+                        <span>Vincent Status:</span>
+                        <span class="negative">Offline</span>
+                    </div>
+                    <p style="text-align: center; margin-top: 20px; opacity: 0.7;">
+                        Vincent policy data unavailable. System offline.
+                    </p>
+                `;
+            }
+
+            async loadRecentTrades() {
+                try {
+                    const response = await fetch(`${this.apiBase}/api/dashboard/trades`);
+                    const data = await response.json();
+                    this.renderRecentTrades(data);
+                } catch (error) {
+                    this.renderOfflineTrades();
+                }
+            }
+
+            renderRecentTrades(data) {
+                const container = document.getElementById('recent-trades');
+                if (data.trades.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; opacity: 0.7;">No recent trades</p>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div class="trades-list">
+                        ${data.trades.map(trade => `
+                            <div class="trade-item trade-${trade.side.toLowerCase()}">
+                                <div>
+                                    <strong>${trade.agent}</strong> - ${trade.pair}
+                                    <br>
+                                    <small>${new Date(trade.timestamp).toLocaleString()}</small>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div class="${trade.side === 'BUY' ? 'positive' : 'negative'}">
+                                        ${trade.side} ${trade.size} @ $${trade.price.toFixed(4)}
+                                    </div>
+                                    <div class="${trade.pnl >= 0 ? 'positive' : 'negative'}">
+                                        P&L: $${trade.pnl.toFixed(2)}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            renderOfflineTrades() {
+                const container = document.getElementById('recent-trades');
+                container.innerHTML = `
+                    <p style="text-align: center; opacity: 0.7;">
+                        Trade history unavailable. System offline.
+                    </p>
+                `;
+            }
+
+            async loadMarketData() {
+                try {
+                    const response = await fetch(`${this.apiBase}/api/dashboard/market-data`);
+                    const data = await response.json();
+                    this.renderMarketData(data);
+                } catch (error) {
+                    this.renderOfflineMarket();
+                }
+            }
+
+            renderMarketData(data) {
+                const container = document.getElementById('market-data');
+                container.innerHTML = `
+                    <div class="market-grid">
+                        ${Object.entries(data.markets).map(([pair, market]) => `
+                            <div class="market-card">
+                                <h4>${pair}</h4>
+                                <div class="market-price ${market.change24h >= 0 ? 'positive' : 'negative'}">
+                                    $${market.price.toLocaleString()}
+                                </div>
+                                <div class="${market.change24h >= 0 ? 'positive' : 'negative'}">
+                                    ${market.change24h >= 0 ? '+' : ''}${market.change24h.toFixed(2)}%
+                                </div>
+                                <div style="font-size: 0.9em; opacity: 0.8;">
+                                    Vol: $${(market.volume / 1000000).toFixed(1)}M
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            renderOfflineMarket() {
+                const container = document.getElementById('market-data');
+                container.innerHTML = `
+                    <p style="text-align: center; opacity: 0.7;">
+                        Market data unavailable. System offline.
+                    </p>
+                `;
+            }
+
+            setupPerformanceChart() {
+                const ctx = document.getElementById('performanceChart').getContext('2d');
+                this.performanceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Portfolio Value',
+                            data: [],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: { color: 'white' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            y: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            updateSystemStatus(online) {
+                const statusElement = document.getElementById('system-status');
+                if (online) {
+                    statusElement.textContent = 'System Online';
+                    statusElement.className = 'status-badge status-online';
+                } else {
+                    statusElement.textContent = 'System Offline';
+                    statusElement.className = 'status-badge status-offline';
+                }
+            }
+
+            updateLastUpdateTime() {
+                document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+            }
+
+            formatUptime(seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                return `${hours}h ${minutes}m`;
+            }
+
+            startAutoRefresh() {
+                setInterval(() => {
+                    this.loadAllData();
+                }, 10000); // Refresh every 10 seconds
+            }
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new VincentDashboard();
+        });
+    </script>
+</body>
+</html>

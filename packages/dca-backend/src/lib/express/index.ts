@@ -12,6 +12,13 @@ import {
   handleDeleteScheduleRoute,
   handleEditScheduleRoute,
 } from './schedules';
+import {
+  handleAgentStatusRoute,
+  handlePerformanceMetricsRoute,
+  handleVincentPolicyStatusRoute,
+  handleRecentTradesRoute,
+  handleMarketDataRoute
+} from './dashboard';
 import { env } from '../env';
 import { serviceLogger } from '../logger';
 
@@ -72,5 +79,12 @@ export const registerRoutes = (app: Express) => {
     authenticatedRequestHandler(handleDeleteScheduleRoute)
   );
 
-  serviceLogger.info(`Routes registered`);
+  // Dashboard API routes - public for demo purposes
+  app.get('/api/dashboard/agents', handleAgentStatusRoute);
+  app.get('/api/dashboard/performance', handlePerformanceMetricsRoute);
+  app.get('/api/dashboard/vincent-policy', handleVincentPolicyStatusRoute);
+  app.get('/api/dashboard/trades', handleRecentTradesRoute);
+  app.get('/api/dashboard/market-data', handleMarketDataRoute);
+
+  serviceLogger.info(`Routes registered including dashboard API`);
 };

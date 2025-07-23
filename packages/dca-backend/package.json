@@ -26,6 +26,9 @@
     "vincent-hackathon:self-improving": "pnpm build && node ./dist/vincent-hackathon-self-improving.mjs",
     "vincent-hackathon:self-improving:dev": "pnpm dotenvx run -- npx tsx src/vincent-hackathon-self-improving.ts",
     "vincent-hackathon:self-improving:test": "AUTO_STOP_MINUTES=2 pnpm dotenvx run -- npx tsx src/vincent-hackathon-self-improving.ts --balance 1000 --daily-limit 100 --learning-rate 0.01",
+    "production-dashboard": "pnpm build && node ./dist/production-system-with-dashboard.mjs",
+    "production-dashboard:dev": "pnpm dotenvx run -- npx tsx src/production-system-with-dashboard.ts",
+    "production-dashboard:test": "AUTO_STOP_MINUTES=1 pnpm dotenvx run -- npx tsx src/production-system-with-dashboard.ts --balance 1000",
     "clean": "pnpm exec rm -Rf node_modules dist",
     "mintRli": "pnpm dotenvx run -- pnpm bun ./src/bin/mintRLINft.ts"
   },
